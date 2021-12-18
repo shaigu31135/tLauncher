@@ -1,0 +1,8 @@
+D:\Programming\C-Sharp\tLauncher\bin\x64\Release\tLauncher.exe.config
+D:\Programming\C-Sharp\tLauncher\bin\x64\Release\tLauncher.exe
+D:\Programming\C-Sharp\tLauncher\obj\x64\Release\tLauncher.csproj.SuggestedBindingRedirects.cache
+D:\Programming\C-Sharp\tLauncher\obj\x64\Release\TagLauncher.Form1.resources
+D:\Programming\C-Sharp\tLauncher\obj\x64\Release\tLauncher.Properties.Resources.resources
+D:\Programming\C-Sharp\tLauncher\obj\x64\Release\tLauncher.csproj.GenerateResource.cache
+D:\Programming\C-Sharp\tLauncher\obj\x64\Release\tLauncher.csproj.CoreCompileInputs.cache
+D:\Programming\C-Sharp\tLauncher\obj\x64\Release\tLauncher.exe
