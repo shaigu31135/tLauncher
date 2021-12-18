@@ -1,6 +1,9 @@
+using Microsoft.CSharp;
 using Microsoft.VisualBasic;
 using System;
+using System.CodeDom.Compiler;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -19,9 +22,6 @@ namespace TagLauncher {
 
         private static Form1 defaultInstance;
 
-        /// <summary>
-        /// Added by the VB.Net to C# Converter to support default instance behavour in C#
-        /// </summary>
         public static Form1 Default {
             get {
                 if (defaultInstance == null) {
@@ -196,7 +196,8 @@ namespace TagLauncher {
                     Panel1.Visible = true;
                     TextBox2.Text = "";
                     if (t.Length > 1) {
-                        TextBox2.Text = eVal(t.Substring(1));
+                        string r = t.Substring(1);
+                        TextBox2.Text = eVal(r);
                     }
                 } else if (t.Substring(0, 1) == "~") {
                     Panel1.Visible = true;
@@ -232,11 +233,24 @@ namespace TagLauncher {
 
         public string eVal(string Expression) {
             try {
-                Type t = Type.GetTypeFromProgID("MSScriptControl.ScriptControl");
-                object obj = Activator.CreateInstance(t);
-                t.InvokeMember("Language", System.Reflection.BindingFlags.SetProperty, null, obj, new object[] { "vbscript" });
-                object result = t.InvokeMember("Eval", System.Reflection.BindingFlags.InvokeMethod, null, obj, new object[] { Expression });
-                return Expression + "\r\n" + ">>" + System.Convert.ToString(result);
+                CSharpCodeProvider csCodeProvider = new CSharpCodeProvider();
+                CompilerParameters csParams = new CompilerParameters();
+                StringBuilder source = new StringBuilder("public class MainClass{ " +
+                                 "public static object Eval(){ " +
+                                     "return (EXP); " +
+                                 "}" +
+                             "}").Replace("EXP", Expression);
+                csParams.CompilerOptions = "/t:library";
+                csParams.GenerateInMemory = true;
+                var csResults = csCodeProvider.CompileAssemblyFromSource(csParams, source.ToString());
+                if (csResults.Errors.Count > 0) {
+                    return "此表达式有误。";
+                } else {
+                    var ass = csResults.CompiledAssembly;
+                    var type = ass.GetType("MainClass");
+                    var result = type.InvokeMember("Eval", BindingFlags.InvokeMethod, null, null, null);
+                    return Expression + "\r\n>>" + result.ToString();
+                }
             } catch (Exception) {
                 return "此表达式有误。";
             }
@@ -263,6 +277,12 @@ namespace TagLauncher {
                         ListBox3_DoubleClick(sender, e);
                     }
                 }
+                TextBox1.Clear();
+                Panel1.Visible = false;
+                ListBox3.Visible = false;
+                ListBox1.Visible = true;
+                this.WindowState = FormWindowState.Minimized;
+                this.TopMost = false;
             } else if (ListBox3.Visible && ListBox3.Items.Count > 0 & ListBox3.SelectedIndex != -1) {
                 if (e.KeyCode == Keys.Up & ListBox3.SelectedIndex > 0) {
                     ListBox3.SelectedIndex--;
@@ -270,12 +290,6 @@ namespace TagLauncher {
                     ListBox3.SelectedIndex++;
                 }
             }
-            TextBox1.Clear();
-            Panel1.Visible = false;
-            ListBox3.Visible = false;
-            ListBox1.Visible = true;
-            this.WindowState = FormWindowState.Minimized;
-            this.TopMost = false;
         }
 
         public void ListBox3_DoubleClick(object sender, EventArgs e) {
@@ -304,8 +318,6 @@ namespace TagLauncher {
                 File.WriteAllText(Application.StartupPath + "\\data.dat", s.ToString());
             }
         }
-
-
 
         public void ListBox1_DragDrop(object sender, DragEventArgs e) {
             string nFile = ((System.Array)e.Data.GetData(DataFormats.FileDrop)).GetValue(0).ToString();
